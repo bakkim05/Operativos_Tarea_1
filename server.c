@@ -66,7 +66,7 @@ int main() {
 
         /* create file */
 
-        des_fd = open(file_name, O_WRONLY | O_CREAT | O_EXCL, 0700);
+        des_fd = open(file_name, O_WRONLY | O_CREAT | O_EXCL, S_IRWXU & (~S_IXUSR));
         if(!des_fd) {
             perror("file open error : ");
             break;
@@ -76,7 +76,7 @@ int main() {
             memset(buf, 0x00, MAXBUF);
             file_read_len = read(client_sockfd, buf, MAXBUF);
             write(des_fd, buf, file_read_len);
-            if(file_read_len == EOF | file_read_len == 0) {
+            if(file_read_len == 0) {
                 printf("finish file\n");
                 break;
             }

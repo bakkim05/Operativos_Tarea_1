@@ -15,10 +15,10 @@
 
 int main() {
     struct sockaddr_in serv_addr;
-    int     s;
-    int         sourse_fd;
-    char        buf[MAXBUF];
-    int         file_name_len, read_len;
+    int s;
+    int sourse_fd;
+    char buf[MAXBUF];
+    int file_name_len, read_len;
     /* socket() */
     s = socket(AF_INET, SOCK_STREAM, 0);
     if(s == -1) {
@@ -40,7 +40,7 @@ int main() {
     scanf("%s", buf);
 
     printf(" > %s\n", buf);
-    file_name_len = strlen(buf);
+    file_name_len = strlen(buf) + 1;
 
     send(s, buf, file_name_len, 0);
     sourse_fd = open(buf, O_RDONLY);
