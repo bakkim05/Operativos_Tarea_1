@@ -9,9 +9,75 @@
 #include <fcntl.h>      // open
 #include <errno.h>
 
+
+//STB_IMAGE
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image/stb_image.h"
+
+
+
 #define PORT    5500
 #define MAXBUF  1024
 
+//Valores Globales
+long red, green, blue = 0;
+
+
+//Algoritmo Clasificador de Color
+void get_image(char *image)
+{
+	int width, height, channels;
+    printf("The image path is: %s\n",image);
+	unsigned char *img = stbi_load(image,&width, &height, &channels, 3);
+
+	if (img == NULL){
+		printf("Error loading the image\n");
+		return;
+	}
+
+	printf("Loaded image with a width of %dpx, a heigh of %dpx and %d channels\n", width, height, channels);
+
+    unsigned bytePerPixel = channels;
+
+    for (int i=0; i<height; i++){
+        for (int j=0; j<width; j++){
+            unsigned char* pixelOffset = img + (i+ height*j)*bytePerPixel;
+            unsigned char r = pixelOffset[0];
+            unsigned char g = pixelOffset[1];
+            unsigned char b = pixelOffset[2];
+            greater((int)r,(int)g,(int)b);
+        }
+    }
+    selector(red,green,blue);
+
+    stbi_image_free(img);
+}
+
+int greater(int r, int g, int b)
+{
+    if (r >= g && r >= b){red += 1; return;}
+    if (g > r && g > b){green += 1; return;}
+    if (b > r && b > g){blue += 1; return;}
+}
+
+void selector(long r, long g, long b)
+{
+    if (r >= g && r >= b){
+        printf("La imagen es mayoritariamente roja\n");
+        return;
+    }
+    if (g > r && g > b){
+        printf("La imagen es mayoritariamente verde\n");
+        return;
+    }
+    if (b > r && b > g){
+        printf("La imagen es mayoritariamente azul\n");
+        return;
+    }
+}
+
+
+//SERVER INSIDE MAIN
 int main() {
     int server_sockfd;
     int client_sockfd;
@@ -64,6 +130,11 @@ int main() {
             break;
         }
 
+
+        // algoritmo_color
+        get_image(file_name);
+
+
         /* create file */
 
         des_fd = open(file_name, O_WRONLY | O_CREAT | O_EXCL, S_IRWXU & (~S_IXUSR));
@@ -78,6 +149,7 @@ int main() {
             write(des_fd, buf, file_read_len);
             if(file_read_len == 0) {
                 printf("finish file\n");
+                get_image(des_fd);
                 break;
             }
 

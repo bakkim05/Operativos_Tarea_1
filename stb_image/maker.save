@@ -1,0 +1,1 @@
+gcc -std=c17 -Wall t0.c -o t0 -lm

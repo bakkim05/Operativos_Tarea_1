@@ -15,7 +15,7 @@ void selector(long r, long g, long b);
 //Main
 int main(void)
 {
-    get_image("images/green_full.png");
+    get_image("images/sample.jpeg");
 }
 
 void get_image(char *image)
