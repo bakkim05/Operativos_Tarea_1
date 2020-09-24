@@ -46,13 +46,20 @@ int main(){
     }
     printf("[+]Connected to Server.\n");
 
-
+    while(1){
     printf("Image Directory: ");
     scanf("%s",fp);
+    printf("%s\n",fp);
 
     if (fp == NULL) {
         perror("[-]Error in reading file.");
         exit(1);
+    }
+
+    if (fp == "fin"){
+        printf("[+]Closing the connection.\n");
+        close(sockfd);
+        return 0;
     }
 
     printf("[ ]Getting Picture Size\n");
@@ -78,8 +85,8 @@ int main(){
     // send_file(fp, sockfd);
     printf("[+]File data sent successfully.\n");
 
-    printf("[+]Closing the connection.\n");
-    close(sockfd);
+    }
+
 
     return 0;
 }
