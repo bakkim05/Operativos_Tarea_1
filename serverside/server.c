@@ -3,7 +3,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#define SIZE 1024
+#include <stdbool.h>
+#include <string.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
@@ -12,6 +13,7 @@
 
 //Valores Globales
 long red, green, blue = 0;
+bool whitelist = false;
 
 void get_image(char* nameBuffer, char *image)
 {
@@ -56,20 +58,53 @@ int greater(int r, int g, int b)
 void selector(char* nameBuffer,long r, long g, long b, int width, int height, int channels, unsigned char* img)
 {
     char path[511];
+
     if (r >= g && r >= b){
-        printf("La imagen es mayoritariamente roja\n");
         strcpy(path,"red/");
     }
     if (g > r && g > b){
-        printf("La imagen es mayoritariamente verde\n");
         strcpy(path,"green/");
     }
     if (b > r && b > g){
-        printf("La imagen es mayoritariamente azul\n");
         strcpy(path,"blue/");
+    }
+
+    if (whitelist == false){
+        strcpy(path,"Not_Trusted/");
     }
     strcat(path,nameBuffer);
     stbi_write_jpg(path,width,height,channels,img,100);
+}
+
+void bouncer(char * ip)
+{
+    FILE * configFile;
+    char * line;
+    size_t length = 0;
+    ssize_t read;
+
+    configFile = fopen("configuracion.config", "r");
+    if (configFile == NULL)
+        exit(EXIT_FAILURE);
+
+    while ((read = getline(&line, &length, configFile)) != -1) {
+        line[strlen(line) - 1]  = '\0';
+
+        if (strcmp(line,ip) == 0)
+        {
+            printf("[ ]IP is in the whitelist.\n");
+            whitelist = true;
+            return;
+        }
+    }
+
+    fclose(configFile);
+    if (line)
+        free(line);
+
+    printf("[ ]IP is NOT in the whitelist.\n"); 
+    whitelist = false;
+    return;
 }
 
 
@@ -108,6 +143,9 @@ int main(){
     }
 
     addr_size = sizeof(new_addr);
+
+    //whitelist
+    bouncer(ip);
 
     while(1){
         new_sock = accept(sockfd, (struct sockaddr*)&new_addr, &addr_size);
