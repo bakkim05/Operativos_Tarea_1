@@ -13,6 +13,14 @@ FROM centos:latest
 
 COPY --from=build-env /app/server /app/server
 
+RUN mkdir app/red
+
+RUN mkdir app/green
+
+RUN mkdir app/blue
+
+RUN mkdir app/Not_Trusted
+
 WORKDIR /app
 
 CMD ["/app/server"]

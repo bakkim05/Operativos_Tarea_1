@@ -85,7 +85,8 @@ void bouncer(char * ip)
 
     configFile = fopen("configuracion.config", "r");
     if (configFile == NULL)
-        exit(EXIT_FAILURE);
+        printf("[ ]No se cargo el archivo config. Default: Not Trusted IP\n");
+        return;
 
     while ((read = getline(&line, &length, configFile)) != -1) {
         line[strlen(line) - 1]  = '\0';
