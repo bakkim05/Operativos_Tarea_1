@@ -144,11 +144,11 @@ int main(){
 
     addr_size = sizeof(new_addr);
 
-    //whitelist
-    bouncer(ip);
-
     while(1){
         new_sock = accept(sockfd, (struct sockaddr*)&new_addr, &addr_size);
+
+        //Whitelist
+        bouncer(inet_ntoa(new_addr.sin_addr));
 
         printf("[ ]Reading File Name\n");
         char nameBuffer[255];

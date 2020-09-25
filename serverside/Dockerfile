@@ -1,17 +1,18 @@
-FROM "centos"
+FROM centos:latest as build-env
+RUN yum -y update && \
+    yum -y install gcc
 
-EXPOSE 8080 8080
-
-WORKDIR /operativos
+WORKDIR /app
 
 COPY . .
 
-RUN yum update -y
-
-RUN yum install gcc -y
-
-CMD ["gcc -std=c17 -Wall server.c -o server -lm"]
-
-CMD ["./server"]
+RUN gcc -o server server.c -lm
 
 
+FROM centos:latest
+
+COPY --from=build-env /app/server /app/server
+
+WORKDIR /app
+
+CMD ["/app/server"]
