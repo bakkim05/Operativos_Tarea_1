@@ -13,7 +13,7 @@
 //Valores Globales
 long red, green, blue = 0;
 
-void get_image(char *image)
+void get_image(char* nameBuffer, char *image)
 {
 	int width, height, channels;
 	unsigned char *img = stbi_load(image,&width, &height, &channels, 3);
@@ -34,9 +34,11 @@ void get_image(char *image)
             greater((int)r,(int)g,(int)b);
         }
     }
-    selector(red,green,blue, width, height, channels, img);
+    selector(nameBuffer,red,green,blue, width, height, channels, img);
 
-    red, green, blue = 0;
+    red = 0;
+    green = 0;
+    blue = 0;
 
     stbi_image_free(img);
 
@@ -48,48 +50,27 @@ int greater(int r, int g, int b)
     if (r >= g && r >= b){red += 1; return;}
     if (g > r && g > b){green += 1; return;}
     if (b > r && b > g){blue += 1; return;}
+    else{return;}
 }
 
-void selector(long r, long g, long b, int width, int height, int channels, unsigned char* img)
+void selector(char* nameBuffer,long r, long g, long b, int width, int height, int channels, unsigned char* img)
 {
-    
+    char path[511];
     if (r >= g && r >= b){
         printf("La imagen es mayoritariamente roja\n");
-        stbi_write_jpg("red/red.jpg",width,height,channels,img,100);
-        return;
+        strcpy(path,"red/");
     }
     if (g > r && g > b){
         printf("La imagen es mayoritariamente verde\n");
-        stbi_write_jpg("blue/blue.jpg",width,height,channels,img,100);
-        return;
+        strcpy(path,"green/");
     }
     if (b > r && b > g){
         printf("La imagen es mayoritariamente azul\n");
-        stbi_write_jpg("blue/blue.jpg",width,height,channels,img,100);
-        return;
+        strcpy(path,"blue/");
     }
+    strcat(path,nameBuffer);
+    stbi_write_jpg(path,width,height,channels,img,100);
 }
-
-// void *recieve_image (int new_sock){
-//     printf("[ ]Reading Picture Size\n");
-//     int size;
-//     read(new_sock, &size, sizeof(int));
-
-//     printf("[ ]Reading Picture Byte Array\n");
-//     char p_array[size];
-//     read(new_sock, p_array, size);
-
-//     printf("[ ]Converting Byte Array to Picture\n");
-//     FILE *image;
-//     image = fopen("temp.png", "w");
-//     fwrite(p_array, 1, sizeof(p_array),image);
-//     fclose(image);
-
-//     printf("[+]Data written in the file successfully.\n");
-
-//     return NULL;
-// }
-
 
 
 int main(){
@@ -100,9 +81,6 @@ int main(){
     int sockfd, new_sock;
     struct sockaddr_in server_addr, new_addr;
     socklen_t addr_size;
-
-    // pthread_t tid;
-
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0) {
@@ -130,31 +108,33 @@ int main(){
     }
 
     addr_size = sizeof(new_addr);
-    new_sock = accept(sockfd, (struct sockaddr*)&new_addr, &addr_size);
 
-    // while((new_sock = accept(sockfd, (struct sockaddr*)&new_addr, &addr_size)) > 0){
-    //     recieve_image(&new_sock);
-    //     // pthread_create(&tid,NULL,recieve_image,&new_sock);
-    //     // pthread_join(tid,NULL);
-    // }
+    while(1){
+        new_sock = accept(sockfd, (struct sockaddr*)&new_addr, &addr_size);
 
-    printf("[ ]Reading Picture Size\n");
-    int size;
-    read(new_sock, &size, sizeof(int));
+        printf("[ ]Reading File Name\n");
+        char nameBuffer[255];
+        read(new_sock, nameBuffer, sizeof(nameBuffer));
 
-    printf("[ ]Reading Picture Byte Array\n");
-    char p_array[size];
-    read(new_sock, p_array, size);
+        printf("[ ]Reading Picture Size\n");
+        int size;
+        read(new_sock, &size, sizeof(int));
 
-    printf("[ ]Converting Byte Array to Picture\n");
-    FILE *image;
-    image = fopen("temp.png", "w");
-    fwrite(p_array, 1, sizeof(p_array),image);
-    fclose(image);
+        printf("[ ]Reading Picture Byte Array\n");
+        char p_array[size];
+        read(new_sock, p_array, size);
 
-    printf("[+]Data written in the file successfully.\n");
+        printf("[ ]Converting Byte Array to Picture\n");
+        FILE *image;
+        image = fopen("temp.png", "w");
+        fwrite(p_array, 1, sizeof(p_array),image);
+        fclose(image);
+        close(new_sock);
 
-    get_image("temp.png");
+        printf("[+]Data written in the file successfully.\n");
+
+        get_image(nameBuffer,"temp.png");
+    }
 
     return 0;
 }
