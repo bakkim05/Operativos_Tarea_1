@@ -4,6 +4,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <libgen.h>
+#include <string.h>
 #define SIZE 1024
 
 // void send_file(char *fp, int sockfd){
@@ -20,8 +21,9 @@
 //     }
 // }
 
-int main(){
-    char *ip = "127.0.0.1";
+int main(int argc, char *argv[]){
+    // char *ip = "127.0.0.1";
+    char *ip = argv[1];
     int port = 8080;
     int e;
 
@@ -59,7 +61,7 @@ int main(){
             exit(1);
         }
 
-        if (fp == "fin"){
+        if (strcmp(fp,"fin")==0){
             printf("[+]Closing the connection.\n");
             close(sockfd);
             return 0;
