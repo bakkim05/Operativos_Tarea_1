@@ -4,12 +4,11 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <libgen.h>
-#include <string.h>
 #define SIZE 1024
 
 int main(int argc, char *argv[]){
     char *ip = argv[1];
-    int port = 8080;
+    int port = 9000;
     int e;
 
     int sockfd;
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]){
             exit(1);
         }
 
-        if (strcmp(fp,"fin")==0){
+        if (fp == "fin"){
             printf("[+]Closing the connection.\n");
             close(sockfd);
             return 0;
@@ -74,6 +73,8 @@ int main(int argc, char *argv[]){
             bzero(send_buffer, sizeof(send_buffer));
         }
         
+
+        // send_file(fp, sockfd);
         printf("[+]File data sent successfully.\n");
 
         close(e);

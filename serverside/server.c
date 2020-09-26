@@ -15,6 +15,43 @@
 long red, green, blue = 0;
 bool whitelist = false;
 
+/** 
+ * Funcion para parsear el archivo configuracion.config y compararlo con el ip del cliente 
+ * **/
+void bouncer(char * ip)
+{
+    FILE * configFile;
+    char * line;
+    size_t length = 0;
+    ssize_t read;
+
+    configFile = fopen("configuracion.config", "r");
+    if (configFile == NULL){
+        printf("[ ]No se cargo el archivo config. Default: Not Trusted IP\n");
+        return;
+    }
+
+    else{
+        while ((read = getline(&line, &length, configFile)) != -1) {
+            line[strlen(line) - 1]  = '\0';
+
+            if (strcmp(line,ip) == 0)
+            {
+                printf("[ ]IP is in the whitelist.\n");
+                whitelist = true;
+                return;
+            }
+        }
+        fclose(configFile);
+        if (line)
+            free(line);
+
+        printf("[ ]IP is NOT in the whitelist.\n"); 
+        whitelist = false;
+        return;
+    }
+}
+
 /**
  * Obtiene la imagen y va recorriendo pixel por pixel
  **/
@@ -90,55 +127,10 @@ void selector(char* nameBuffer,long r, long g, long b, int width, int height, in
     stbi_write_jpg(path,width,height,channels,img,100);
 }
 
-/** 
- * Funcion para parsear el archivo configuracion.config y compararlo con el ip del cliente 
- * **/
-void bouncer(char * ip)
-{
-    FILE * configFile;
-    char * line;
-    size_t length = 0;
-    ssize_t read;
-
-    /**
-     * Abre el archivo configuracion.config, de no encontrarlo por defecto determina que
-     * todas las conexiones no estan dentro del whitelist
-     * */
-    configFile = fopen("configuracion.config", "r");
-    if (configFile == NULL)
-        printf("[ ]No se cargo el archivo config. Default: Not Trusted IP\n");
-        return;
-
-    /**
-     * lee linea por linea de archivo hasta finalizar
-     * */
-    while ((read = getline(&line, &length, configFile)) != -1) {
-        line[strlen(line) - 1]  = '\0';
-
-        /** 
-         * Al momento de que haya un hit entre el IP del cliente y los del whitelist
-         * se pone el booleano global whitelist en true y sale
-         * */
-        if (strcmp(line,ip) == 0)
-        {
-            printf("[ ]IP is in the whitelist.\n");
-            whitelist = true;
-            return;
-        }
-    }
-
-    fclose(configFile);
-    if (line)
-        free(line);
-
-    printf("[ ]IP is NOT in the whitelist.\n"); 
-    whitelist = false;
-    return;
-}
-
 int main(){
     char *ip = "127.0.0.1";
-    int port = 8080;
+    // char *ip = "0.0.0.0";
+    int port = 9000;
     int e;
 
     int sockfd, new_sock;
@@ -176,6 +168,7 @@ int main(){
         new_sock = accept(sockfd, (struct sockaddr*)&new_addr, &addr_size);
 
         //Whitelist
+        printf("[ ]IP: %s connected\n", inet_ntoa(new_addr.sin_addr));
         bouncer(inet_ntoa(new_addr.sin_addr));
 
         printf("[ ]Reading File Name\n");
