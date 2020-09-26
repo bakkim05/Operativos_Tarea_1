@@ -15,28 +15,32 @@
 long red, green, blue = 0;
 bool whitelist = false;
 
+/**
+ * Obtiene la imagen y va recorriendo pixel por pixel
+ **/
 void get_image(char* nameBuffer, char *image)
 {
 	int width, height, channels;
-	unsigned char *img = stbi_load(image,&width, &height, &channels, 3);
+	unsigned char *img = stbi_load(image,&width, &height, &channels, 3); //Abre la imagen
 
 	if (img == NULL){
 		printf("Error loading the image\n");
 		return;
 	}
 
-    unsigned bytePerPixel = channels;
+    unsigned bytePerPixel = channels;   //Asigna la cantidad de canales que tiene la imagen
 
+    //Recorre la imagen pixel por pixel
     for (int i=0; i<height; i++){
         for (int j=0; j<width; j++){
             unsigned char* pixelOffset = img + (i+ height*j)*bytePerPixel;
             unsigned char r = pixelOffset[0];
             unsigned char g = pixelOffset[1];
             unsigned char b = pixelOffset[2];
-            greater((int)r,(int)g,(int)b);
+            greater((int)r,(int)g,(int)b); //Determina cual canal es el dominante
         }
     }
-    selector(nameBuffer,red,green,blue, width, height, channels, img);
+    selector(nameBuffer,red,green,blue, width, height, channels, img); //Determina en cual contenedor deberia estar
 
     red = 0;
     green = 0;
@@ -47,6 +51,11 @@ void get_image(char* nameBuffer, char *image)
     return;
 }
 
+/**
+ * Funcion para comparar cual valor es mas alto entre los R, G y B de los pixeles.
+ * En caso de un empate siempre se escoge el rojo. Retorna un aumento unidatior al canal
+ * de color ganador.
+ * */
 int greater(int r, int g, int b)
 {
     if (r >= g && r >= b){red += 1; return;}
@@ -55,6 +64,11 @@ int greater(int r, int g, int b)
     else{return;}
 }
 
+/**
+ * Compara los valores del contador de Red, Blue y Green y determina cual es el mayor
+ * y direcciona el path a la cual la imagen debe ser escrita. en caso de un empate
+ * siempre se va escoger el rojo. Los Not truested tienen su propio directorio.
+ * */
 void selector(char* nameBuffer,long r, long g, long b, int width, int height, int channels, unsigned char* img)
 {
     char path[511];
@@ -76,6 +90,9 @@ void selector(char* nameBuffer,long r, long g, long b, int width, int height, in
     stbi_write_jpg(path,width,height,channels,img,100);
 }
 
+/** 
+ * Funcion para parsear el archivo configuracion.config y compararlo con el ip del cliente 
+ * **/
 void bouncer(char * ip)
 {
     FILE * configFile;
@@ -83,14 +100,25 @@ void bouncer(char * ip)
     size_t length = 0;
     ssize_t read;
 
+    /**
+     * Abre el archivo configuracion.config, de no encontrarlo por defecto determina que
+     * todas las conexiones no estan dentro del whitelist
+     * */
     configFile = fopen("configuracion.config", "r");
     if (configFile == NULL)
         printf("[ ]No se cargo el archivo config. Default: Not Trusted IP\n");
         return;
 
+    /**
+     * lee linea por linea de archivo hasta finalizar
+     * */
     while ((read = getline(&line, &length, configFile)) != -1) {
         line[strlen(line) - 1]  = '\0';
 
+        /** 
+         * Al momento de que haya un hit entre el IP del cliente y los del whitelist
+         * se pone el booleano global whitelist en true y sale
+         * */
         if (strcmp(line,ip) == 0)
         {
             printf("[ ]IP is in the whitelist.\n");
@@ -107,7 +135,6 @@ void bouncer(char * ip)
     whitelist = false;
     return;
 }
-
 
 int main(){
     char *ip = "127.0.0.1";

@@ -7,22 +7,7 @@
 #include <string.h>
 #define SIZE 1024
 
-// void send_file(char *fp, int sockfd){
-//     printf("entro aqui");
-//     int n;
-//     char data[SIZE] = {0};
-
-//     while(fgets(data, SIZE, fp) != NULL) {
-//     if (send(sockfd, data, sizeof(data), 0) == -1) {
-//         perror("[-]Error in sending file.");
-//         exit(1);
-//     }
-//     bzero(data, SIZE);
-//     }
-// }
-
 int main(int argc, char *argv[]){
-    // char *ip = "127.0.0.1";
     char *ip = argv[1];
     int port = 8080;
     int e;
@@ -89,8 +74,6 @@ int main(int argc, char *argv[]){
             bzero(send_buffer, sizeof(send_buffer));
         }
         
-
-        // send_file(fp, sockfd);
         printf("[+]File data sent successfully.\n");
 
         close(e);
